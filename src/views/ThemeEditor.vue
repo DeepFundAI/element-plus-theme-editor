@@ -1,6 +1,13 @@
 <template>
   <el-row style="padding: 40px 20px 0 20px">
-    <el-col :span="6">主题编辑器</el-col>
+    <el-col :span="6">
+      <div class="flex items-center gap-2">
+        <span>主题编辑器</span>
+        <el-button type="primary" link @click="openGithub">
+          <Github style="color: rgb(48, 49, 51)" class="!w-5 !h-5" />
+        </el-button>
+      </div>
+    </el-col>
     <el-col :span="18" style="display: flex; justify-content: end; align-items: start">
       <el-switch
         v-model="isDark"
@@ -336,6 +343,7 @@ import color from '@/common/config/theme/color'
 import size from '@/common/config/theme/size'
 import style from '@/common/config/theme/style'
 import other from '@/common/config/theme/other'
+import Github from '@/components/icons/Github.vue'
 
 const activeName = ref('first')
 const activeNames = ref(['1'])
@@ -385,6 +393,10 @@ function saveObjectAsCss(filename: string) {
   a.click()
   URL.revokeObjectURL(url)
   document.body.removeChild(a)
+}
+
+const openGithub = () => {
+  window.open('https://github.com/DeepFundAI/element-plus-theme-editor', '_blank')
 }
 </script>
 <style lang="less" scoped>
