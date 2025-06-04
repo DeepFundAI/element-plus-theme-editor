@@ -14,6 +14,7 @@ import ElementPlus from 'unplugin-element-plus/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/element-plus-theme-editor/',
   plugins: [
     vue(),
     vueJsx(),
