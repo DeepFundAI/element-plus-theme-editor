@@ -18,8 +18,8 @@
       />
       <el-switch
         v-model="autoColorCalc"
-        active-text="色值自动计算"
-        inactive-text="手动"
+        active-text="自动计算"
+        inactive-text="手动设置"
         style="margin-right: 10px"
       />
       <el-button @click="saveObjectAsCss('cssVar.css')">导出</el-button>
@@ -377,6 +377,7 @@ const mixColor = (color1: string, color2: string, weight: number) => {
     .toString(16)
     .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
+
 
 const recomputeColorVars = (cssVar: string, base: string) => {
   const match = cssVar.match(/^--el-color-(\w+)$/)
