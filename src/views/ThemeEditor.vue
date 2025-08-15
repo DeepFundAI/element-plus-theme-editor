@@ -17,9 +17,9 @@
         style="margin-right: 10px"
       />
       <el-switch
-        v-model="autoPrimaryLight"
-        active-text="自动色值"
-        inactive-text="手动"
+        v-model="autoColorCalc"
+        active-text="自动计算"
+        inactive-text="手动设置"
         style="margin-right: 10px"
       />
       <el-button @click="saveObjectAsCss('cssVar.css')">导出</el-button>
@@ -354,7 +354,7 @@ import Github from '@/components/icons/Github.vue'
 const activeName = ref('first')
 const activeNames = ref(['1'])
 const modifyCssVar: Ref<Record<string, string>> = ref({})
-const autoPrimaryLight = ref(true)
+const autoColorCalc = ref(true)
 
 const isDark = useDark({
   selector: 'html',
@@ -378,24 +378,39 @@ const mixColor = (color1: string, color2: string, weight: number) => {
     .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
+
+const recomputeColorVars = (cssVar: string, base: string) => {
+  const match = cssVar.match(/^--el-color-(\w+)$/)
+  if (!match) return
+  const type = match[1]
+  const targetType = type === 'warning' ? 'warnning' : type
+  const group = color.find((c) => c.type === targetType)
+  if (!group) return
+  group.data.forEach((item) => {
+    if (item.cssVar === cssVar) return
+    const light = item.cssVar.match(/light-(\d+)$/)
+    const dark = item.cssVar.match(/dark-(\d+)$/)
+    let value: string | undefined
+    if (light) {
+      value = mixColor('#ffffff', base, Number(light[1]) / 10)
+    } else if (dark) {
+      value = mixColor('#000000', base, Number(dark[1]) / 10)
+    }
+    if (value) {
+      item.value = value
+      setCssVarValue(item.cssVar, value)
+      modifyCssVar.value[item.cssVar] = value
+    }
+  })
+}
+
 const updateCssVar = (props: CssVarInfo) => {
   const value = props.value + props.unit
   setCssVarValue(props.cssVar, value)
   modifyCssVar.value[props.cssVar] = value
 
-  if (props.cssVar === '--el-color-primary' && autoPrimaryLight.value) {
-    const primaryGroup = color.find((c) => c.type === 'primary')?.data ?? []
-    const computeLight = (light: number) => {
-      const cssVar = `--el-color-primary-light-${light}`
-      const target = primaryGroup.find((d) => d.cssVar === cssVar)
-      if (target) {
-        const mix = mixColor('#ffffff', props.value, light / 10)
-        target.value = mix
-        setCssVarValue(cssVar, mix)
-        modifyCssVar.value[cssVar] = mix
-      }
-    }
-    ;[3, 5, 7, 8, 9].forEach(computeLight)
+  if (autoColorCalc.value) {
+    recomputeColorVars(props.cssVar, props.value)
   }
 }
 
