@@ -16,6 +16,12 @@
         :inactive-icon="Sunny"
         style="margin-right: 10px"
       />
+      <el-switch
+        v-model="autoColorCalc"
+        active-text="色值自动计算"
+        inactive-text="手动"
+        style="margin-right: 10px"
+      />
       <el-button @click="saveObjectAsCss('cssVar.css')">导出</el-button>
       <!-- <el-button>编辑</el-button> -->
       <el-button type="primary">保存</el-button>
@@ -348,6 +354,7 @@ import Github from '@/components/icons/Github.vue'
 const activeName = ref('first')
 const activeNames = ref(['1'])
 const modifyCssVar: Ref<Record<string, string>> = ref({})
+const autoColorCalc = ref(true)
 
 const isDark = useDark({
   selector: 'html',
@@ -358,10 +365,52 @@ const isDark = useDark({
   storage: localStorage,
 })
 
+const mixColor = (color1: string, color2: string, weight: number) => {
+  const w = Math.max(Math.min(weight, 1), 0)
+  const toHex = (color: string) => color.replace('#', '')
+  const c1 = toHex(color1)
+  const c2 = toHex(color2)
+  const r = Math.round(parseInt(c1.slice(0, 2), 16) * w + parseInt(c2.slice(0, 2), 16) * (1 - w))
+  const g = Math.round(parseInt(c1.slice(2, 4), 16) * w + parseInt(c2.slice(2, 4), 16) * (1 - w))
+  const b = Math.round(parseInt(c1.slice(4, 6), 16) * w + parseInt(c2.slice(4, 6), 16) * (1 - w))
+  return `#${r.toString(16).padStart(2, '0')}${g
+    .toString(16)
+    .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+const recomputeColorVars = (cssVar: string, base: string) => {
+  const match = cssVar.match(/^--el-color-(\w+)$/)
+  if (!match) return
+  const type = match[1]
+  const targetType = type === 'warning' ? 'warnning' : type
+  const group = color.find((c) => c.type === targetType)
+  if (!group) return
+  group.data.forEach((item) => {
+    if (item.cssVar === cssVar) return
+    const light = item.cssVar.match(/light-(\d+)$/)
+    const dark = item.cssVar.match(/dark-(\d+)$/)
+    let value: string | undefined
+    if (light) {
+      value = mixColor('#ffffff', base, Number(light[1]) / 10)
+    } else if (dark) {
+      value = mixColor('#000000', base, Number(dark[1]) / 10)
+    }
+    if (value) {
+      item.value = value
+      setCssVarValue(item.cssVar, value)
+      modifyCssVar.value[item.cssVar] = value
+    }
+  })
+}
+
 const updateCssVar = (props: CssVarInfo) => {
   const value = props.value + props.unit
   setCssVarValue(props.cssVar, value)
   modifyCssVar.value[props.cssVar] = value
+
+  if (autoColorCalc.value) {
+    recomputeColorVars(props.cssVar, props.value)
+  }
 }
 
 const setCssVarValue = (name: string, value: string) => {
