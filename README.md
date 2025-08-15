@@ -50,6 +50,13 @@ The exported CSS variable file example:
 --el-color-primary: #FF8340;
 ```
 
+### 5. Automatic Color Value Calculation
+
+Provides a toggle to automatically compute derivative color values from the primary color, reducing manual input. When enabled,
+related color shades are generated for you.
+
+![Auto Color Calculation Preview](docs/imgs/自动计算色值.png)
+
 ## Quick Start
 
 ### Install Dependencies
