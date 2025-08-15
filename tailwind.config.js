@@ -290,8 +290,8 @@ export default {
           'justify-content': 'space-between',
           'align-items': 'center',
         },
-      }),
-        addVariant('black', '.dark &')
+      })
+      addVariant('black', '.dark &')
     }),
   ],
 }
